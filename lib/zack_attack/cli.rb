@@ -6,21 +6,6 @@ require "zack_attack/zfsmbd"
 # ZackAttack Module
 module ZackAttack
 
-  def self.run(args)
-    cli = CLI.new(args)
-    self.options = cli.options 
-    puts self.options
-    puts "HELLO WORLD"
-    cli.run
-  end
-
-  def self.options=(options={})
-    @options = options
-  end
-
-  def self.options
-    @options
-  end
 
   # CLI Class
   class CLI

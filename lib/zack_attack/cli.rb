@@ -73,10 +73,10 @@ module ZackAttack
       socks = ZFsocks::Server.new(@options[:socks_ip], @options[:socks_port])
       #add CLI
 
-      c = Thread.new{gui.start()} 
-      d = Thread.new{socks.start()}
-      b = Thread.new{smb.start()}
-      a = Thread.new{http.start()}
+      c = Thread.new{ gui.start() } 
+      d = Thread.new{ socks.start() }
+      b = Thread.new{ smb.start() }
+      a = Thread.new{ http.start() }
       c.join
 
       puts "exiting"
@@ -98,8 +98,56 @@ module ZackAttack
         @options[:smbd_ip] = option
       end
 
-      opts.on('--http-ip ', "HTTP server IP Address. Default: #{@options[:http_ip]}") do |option|
+      opts.on('--http-port ', "HTTP server port. Default: #{@options[:http_port]}") do |option|
+        @options[:http_port] = option
+      end
+
+      opts.on('--mgmt-ip ', "Management IP Address. Default: #{@options[:mgmt_ip]}") do |option|
         @options[:http_ip] = option
+      end
+
+      opts.on('--mgmt-port ', "Management Port. Default: #{@options[:mgmt_port]}") do |option|
+        @options[:mgmt_port] = option
+      end
+
+      opts.on('--mgmt-user ', "Management user. Default: #{@options[:mgmt_user]}") do |option|
+        @options[:mgmt_user] = option
+      end
+
+      opts.on('--mgmt-password ', "Management password. Default: #{@options[:mgmt_password]}") do |option|
+        @options[:mgmt_password] = option
+      end
+
+      opts.on('--socks-ip ', "SOCKS IP Address. Default: #{@options[:socks_ip]}") do |option|
+        @options[:socks_ip] = option
+      end
+
+      opts.on('--socks-port ', "SOCKS Port. Default: #{@options[:socks_port]}") do |option|
+        @options[:socks_port] = option
+      end
+
+      opts.on('--api-user ', "API Username. Default: #{@options[:api_user]}") do |option|
+        @options[:api_user] = option
+      end
+
+      opts.on('--api-password ', "API Password. Default: #{@options[:api_password]}") do |option|
+        @options[:api_password] = option
+      end
+
+      opts.on('--database ', "Database File Path. Default: #{@options[:db_file]}") do |option|
+        @options[:db_file] = option
+      end
+
+      opts.on('--guid ', "GUID. Default: #{@options[:guid]}") do |option|
+        @options[:guid] = option
+      end
+
+      opts.on('--native-os ', "Native OS. Default: #{@options[:native_os]}") do |option|
+        @options[:native_os] = option
+      end
+
+      opts.on('--native-lm ', "Native LM. Default: #{@options[:native_lm]}") do |option|
+        @options[:native_lm] = option
       end
 
       opts.on('-h', '--help', 'Print application usage.') do |help|

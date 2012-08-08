@@ -1,12 +1,8 @@
-#!/usr/bin/env ruby
-#encoding: ASCII-8BIT
-=begin
- static 112233....
-=end
-require 'base64'
-require 'zfntlm'
+require 'zack_attack/zfntlm'
+
 module ZFClient
   class StaticType2
+
     def initialize (server,port)
       @server = "woof"
       return true

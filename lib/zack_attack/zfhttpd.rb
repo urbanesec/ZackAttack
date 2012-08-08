@@ -1,10 +1,5 @@
-#!/usr/bin/env ruby1.8
-#encoding: ASCII-8BIT
-require 'rubygems'
-require 'webrick'
-require 'base64'
-require 'zfntlm'
-require 'zfclient'
+require 'zack_attack/zfntlm'
+require 'zack_attack/zfclient'
 =begin
  notes: need to track by IP since im guessing wpad won't track cookies
  will redir keep authing? let's find out! 

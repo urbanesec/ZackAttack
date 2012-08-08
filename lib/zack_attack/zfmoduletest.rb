@@ -1,18 +1,18 @@
-#!/usr/bin/env ruby
-#encoding: ASCII-8BIT
 #require './poc_relay_smb_ews_constants'
-require 'config'
-require 'socket'
 
 def Smbtime
-    return [(Time.now.to_f +  + 11644473600) * 10000000].pack("q")
+  [(Time.now.to_f +  + 11644473600) * 10000000].pack("q")
 end 
 
 module ZFsmb
   
   class Client
-    attr_accessor :msgtype, :smbcmd, :smbpid, :smbuid, :smbplexid, :smbtreeid, :smbflags, :smbflags2, :bdata, :hdata, :smbstatus
+    attr_accessor :msgtype, 
+      :smbcmd, :smbpid, :smbuid, 
+      :smbplexid, :smbtreeid, :smbflags, 
+      :smbflags2, :bdata, :hdata, :smbstatus
     # client increments mutliplexid, pid set by client, server sets smbtreeid
+    #
     def initialize(pexist = "")
       if pexist != "" then #already set packet, let's disect it!
           if pexist[4..7] != "\xff\x53\x4d\x42" then
@@ -148,7 +148,7 @@ module ZFsmb
                   Smbtime() + 
                   "\x2c\x01" + #timezone - 300 min from UTC
                   "\x00" #keylength
-         @bdata = GUID + "\x60\x28\x06\x06" + #GSSAPI
+         @bdata = ZackAttack::Config.options[:guid] + "\x60\x28\x06\x06" + #GSSAPI
          "\x2b\x06\x01\x05\x05\x02" + #SPNEGO 
          "\xa0\x1e\x30\x1c\xa0\x1a\x30\x18\x06\x0a" + # bullshit packing and length checks
          "\x2b\x06\x01\x04\x01\x82\x37\x02\x02\x1e" + # iso something?
@@ -170,7 +170,9 @@ module ZFsmb
                 "\x80\x01" + #ANDXOFFSET!!!!?!?!
                 "\x00\x00" + #Action
                 [blob.length].pack('v') #blob length
-      @bdata = blob + NativeOS.unpack("U*").pack("S*") + "\x00\x00" + NativeLM.unpack("U*").pack("S*") + "\x00\x00"
+      @bdata = blob + 
+        ZackAttack::Config.options[:native_os].unpack("U*").pack("S*") + "\x00\x00" + 
+        ZackAttack::Config.options[:native_lm].unpack("U*").pack("S*") + "\x00\x00"
     end
   end
   
@@ -643,7 +645,7 @@ module ZFsmb
     sidreferentid = q[88,4]
     sidmaxcount = q[92,4].unpack("V")
     i = 0
-    h = Hash.new
+    h = {}
     pos = 96
     distance = pos+(4*numsids)
     while i < numsids
@@ -682,7 +684,7 @@ module ZFsmb
     lsadomaininfomaxcount = q[100,4].unpack("V") 
     pos = 104
     i = 0
-    d= Hash.new
+    d = {}
     while i < numdomains
       dlength = q[pos,2]
       dsize = q[pos+2,2]
@@ -721,7 +723,7 @@ module ZFsmb
     nmaxcount = q[pos+8,4].unpack("V")[0]
     pos = pos+12
     i = 0
-    u = Hash.new
+    u = {}
     while (i<nmaxcount)
       ntype = q[pos,2].unpack("v")[0]
       # 00,00?

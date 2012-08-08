@@ -1,10 +1,4 @@
-#!/usr/bin/env ruby
-#encoding: ASCII-8BIT
-=begin
-api requests
-=end
-require 'zfdb'
-require 'base64'
+require 'zack_attack/zfdb'
 
 module ZFClient
   class Apireq

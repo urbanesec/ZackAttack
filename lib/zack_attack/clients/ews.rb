@@ -6,7 +6,7 @@ exchange web services client
 require 'net/http'
 require 'net/https'
 require 'base64'
-require 'zfdb'
+require 'zack_attack/zfdb'
 
 Ews_id_query = '<?xml version="1.0" encoding="utf-8"?>
                       <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">

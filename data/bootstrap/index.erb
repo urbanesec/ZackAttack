@@ -2,10 +2,11 @@
 db = ZFdb::DB.new()
 results = db.GetActiveSessions()
 %>
-<%=ZFadmingui.Header%>
+
+<%= ZFadmingui.Header %>
 
       	<div class="span3">
-<%=ZFadmingui.Leftbar%>
+<%= ZFadmingui.Leftbar %>
 </div>
         <div class="span9">
           <div class="hero-unit">
@@ -22,4 +23,4 @@ results = db.GetActiveSessions()
             </div><!--/span-->
       </div><!--/row-->
       
-<%=ZFadmingui.Footer%>
+<%= ZFadmingui.Footer %>

@@ -1,19 +1,15 @@
-#!/usr/bin/env ruby
-#encoding: ASCII-8BIT
-=begin
- database library 
-=end
-require 'rubygems'
-gem 'sqlite3', '1.3.6' #wtf ruby 1.92
-require 'sqlite3'
+require "sqlite3"
 
 module ZFdb
   class DB
     attr_accessor :db
-    def initialize
-      if !(File::exists?(DBFile)) then
+    def initialize(db_file=false)
+      
+      db_file = ZackAttack.options[:db_file] unless db_file
+
+      if !(File::exists?(db_file)) then
         puts "No DB Exists yet. Creating One!"
-        @db = SQLite3::Database.new(DBFile)
+        @db = SQLite3::Database.new(db_file)
         @db.execute " 
           CREATE TABLE users (
             uid INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -167,7 +163,7 @@ module ZFdb
          @db.execute "INSERT INTO aitemact (aitemactid,moduleid,aitemdesc) VALUES (3,10,'Enum All Users and Groups')"
          
       else
-        @db = SQLite3::Database.open(DBFile)        
+        @db = SQLite3::Database.open(db_file)        
       end
       @db.results_as_hash
     end

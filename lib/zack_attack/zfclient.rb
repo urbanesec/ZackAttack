@@ -1,15 +1,4 @@
-#!/usr/bin/env ruby
-#encoding: ASCII-8BIT
-=begin
-exchange web services client
-=end
-require 'ews'
-require 'smb'
-require 'ldap'
-require 'staticchal'
-require 'zfdb'
-require 'apireq'
-
+require "zack_attack/clients"
 
 module ZFClient
   class Router

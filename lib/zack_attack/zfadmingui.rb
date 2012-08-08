@@ -1,9 +1,3 @@
-#!/usr/bin/env ruby
-#encoding: ASCII-8BIT
-require 'rubygems'
-require 'webrick'
-require 'erb'
-require 'config'
 
 module ZFadmingui
   attr_accessor :server
@@ -23,7 +17,7 @@ module ZFadmingui
       end
       def do_POST(req, resp)
         WEBrick::HTTPAuth.basic_auth(req, resp, "ZackATTACK") {|user, pass|
-          user == MGMTUser && pass == MGMTPass
+          user == ZackAttack.options[:mgmt_user] && pass == ZackAttack.options[:mgmt_password]
         }
         
         if req.path == "/" then
@@ -48,7 +42,7 @@ module ZFadmingui
     class ZFwebapi < WEBrick::HTTPServlet::AbstractServlet
       def do_GET(req, resp)
         WEBrick::HTTPAuth.basic_auth(req, resp, "ZackATTACK") {|user, pass|
-          user == APIUser && pass == APIPass
+          user == ZackAttack.options[:api_user] && pass == ZackAttack.options[:api_password]
         }
         resp['Content-Type'] = "text/html"
         
@@ -68,20 +62,31 @@ module ZFadmingui
       end
     end
     def initialize (ip, port)
-      @s = WEBrick::HTTPServer.new(:BindAddress => ip, :Port => port, :AccessLog => [], :Logger => WEBrick::Log::new("/dev/null", 7))
+      @s = WEBrick::HTTPServer.new(:BindAddress => ip, 
+                                   :Port => port, 
+                                   :AccessLog => [], 
+                                   :Logger => WEBrick::Log::new("/dev/null", 7))
     end
     def start()
       puts "Starting Admin GUI"
-      @s.mount("/static",WEBrick::HTTPServlet::FileHandler,"./bootstrap")
-      @s.mount("/api",ZFwebapi)
-      @s.mount("/",ZFweb3,"./bootstrap/index.erb")
+      static_path = File.expand_path(File.join(File.dirname(__FILE__), 
+                    "../../data/", "bootstrap"))
+      index_path = File.expand_path(File.join(File.dirname(__FILE__), 
+                    "../../data/", "bootstrap/index.erb"))
+
+      @s.mount("/static", WEBrick::HTTPServlet::FileHandler, static_path)
+      @s.mount("/api", ZFwebapi)
+      @s.mount("/", ZFweb3, index_path)
+      p @s
       trap("INT"){
         @s.shutdown
       }
       puts "\n==========================================================="
-      puts " WELCOME TO ZackAttack! - Version 0.a.fail."
+      puts " WELCOME TO ZackAttack! - Version: #{ZackAttack::VERSION}"
       puts " Now with even more win!"
-      puts " No CLI Gui for Now. Connect to http://" + MGMTUser + ":" + MGMTPass + "@" + MGMTIP + ":" + MGMTPort
+      puts " No CLI Gui for Now. Connect to http://" + ZackAttack.options[:mgmt_user] + ":" + 
+        ZackAttack.options[:mgmt_password] + "@" + ZackAttack.options[:mgmt_ip] + 
+        ":" + ZackAttack.options[:mgmt_port].to_s
       puts "==========================================================="
       @s.start
     end

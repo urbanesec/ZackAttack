@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 #encoding: ASCII-8BIT
-require 'zfmoduletest'
-require 'zfdb'
+require 'zack_attack/zfmoduletest'
+require 'zack_attack/zfdb'
 
 module ZFClient
   class Smb

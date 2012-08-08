@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+#encoding: ASCII-8BIT
+
+$:<< '../lib' << 'lib'
+
+require "zack_attack"
+
+ZackAttack.run(ARGV)
+

@@ -1,9 +1,8 @@
-#!/usr/bin/env ruby
-#encoding: ASCII-8BIT
-require 'zfmoduletest'
-require 'zfntlm'
-require 'zfclient'
-require 'zfdb'
+require 'zack_attack/zfmoduletest'
+require 'zack_attack/zfntlm'
+require 'zack_attack/zfclient'
+require 'zack_attack/zfdb'
+
 module ZFsmb
 
   class Server
@@ -14,9 +13,10 @@ module ZFsmb
       begin
         @server = TCPServer.open(ipaddr , 445)
         return @server
-      rescue Errno::EADDRINUSE, Errno::EACCESS
-        puts "PORT IN USE OR PERMS"
-        return false
+      rescue Errno::EADDRINUSE, Errno::EACCES
+        STDERR.puts "Error: Unable to bind to port 445"
+        STDERR.puts "Try `sudo zackattack`"
+        exit 1
       end
     end
     

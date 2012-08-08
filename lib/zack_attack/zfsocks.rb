@@ -1,11 +1,10 @@
-#!/usr/bin/env ruby
-#encoding: ASCII-8BIT
-require 'zfmoduletest'
-require 'zfntlm'
-require 'zfclient'
-require 'zfdb'
 require 'timeout'
-require 'base64'
+
+require 'zack_attack/zfmoduletest'
+require 'zack_attack/zfntlm'
+require 'zack_attack/zfclient'
+require 'zack_attack/zfdb'
+
 
 module ZFsocks
   class Server

@@ -51,4 +51,14 @@ The Rules - Define auto actions to perform upon seeing a user.
 
 The Payloads - Methods to get users to autoauth with Integrated Windows Auth ergo not prompting the user for auth.
 
+=
+XYZ Doesn't work
+=
+
+I'm sure it doesn't ;) I don't always code in ruby, but when i do, i make sure to introduce as many bugs as possible :)
+
+Submit as much info as you can (comfortably) to the issues page. Please try to get a wireshark / pcap capture if it's a client issue. If it contains sensitive data (i.e. ntlm creds of a client) let me know and we can work around that if possible.
+
+Feature request? I want to hear it! Check the todo file and see if i already mentioned it in there, otherwise submit!
+
 I'll fill in more details later....

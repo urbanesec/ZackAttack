@@ -1,0 +1,378 @@
+<%
+ db = ZFdb::DB.new()
+  if servlet_request.query["action"] == "target" then
+    if !(servlet_request.query["tname"]=="" || servlet_request.query["tipaddr"] == "") then
+      db.GetTargetId(servlet_request.query["tipaddr"],servlet_request.query["tname"])
+    end
+  elsif servlet_request.query["action"] == "tgroupmember" then
+    if !(servlet_request.query["tgname"]=="" || servlet_request.query["tipaddr"] == "") then
+      tgid = db.GetTgroupID(servlet_request.query["tgname"])
+      tid = db.GetTargetId(servlet_request.query["tipaddr"],servlet_request.query["tipaddr"])
+    db.AddTargetToTgroup(tid,tgid)
+    end
+  elsif servlet_request.query["action"] == "delfromtg" then
+    db.DelTargetFromTgroup(servlet_request.query["tid"],servlet_request.query["tgid"])
+  elsif servlet_request.query["action"] == "action" then
+    if !(servlet_request.query["tgname"]=="" || servlet_request.query["group"]=="" || servlet_request.query["amoduleid"]=="" ) then
+      if servlet_request.query["alltargets"] == "1" then alltargets=1 else alltargets=0 end
+      if servlet_request.query["allusers"] == "1" then allusers=1 else allusers=0 end
+      aid = db.NewAction("aname","anotes",servlet_request.query["amoduleid"],alltargets,allusers,50)
+      tgid = db.GetTgroupID(servlet_request.query["tgname"])
+      db.AddTgroupToAction(tgid,aid)
+      gid = db.GetGroupID(servlet_request.query["group"])
+    db.AddGroupToAction(gid,aid)
+    end
+  elsif servlet_request.query["action"] == "delaction" then
+    db.DeleteAction(servlet_request.query["aid"])
+  elsif servlet_request.query["action"] == "delaitem" then
+    db.DeleteActionItem(servlet_request.query["aitemid"])
+  elsif servlet_request.query["action"] == "addaitem" then
+    if servlet_request.query["aewsfolderstock"] == "" then
+      folder = servlet_request.query["aewsfolder"]
+    else
+      folder = servlet_request.query["aewsfolderstock"]
+    end
+    db.NewActionItem(servlet_request.query["aaid"],servlet_request.query["aamoduleid"],1,{"folder" => folder}.inspect)
+  elsif servlet_request.query["action"] == "smbenum" then #enum users in group
+  	 group = servlet_request.query["group"] 
+  	 db.NewActionItem(servlet_request.query["aaid"],2,1,{"group" => group}.inspect)
+  elsif servlet_request.query["action"] == "smbexec" then #enum users in group
+  	 cmd = servlet_request.query["cmd"] 
+  	 db.NewActionItem(servlet_request.query["aaid"],2,2,{"cmd" => cmd}.inspect)
+  elsif servlet_request.query["action"] == "ldapenum" then #enum users in group
+  	 group = servlet_request.query["group"] 
+  	 db.NewActionItem(servlet_request.query["aaid"],3,1,{"group" => group}.inspect)
+  elsif servlet_request.query["action"] == "ldapaddutog" then #enum users in group.
+  	 group = servlet_request.query["group"] 
+  	 user = servlet_request.query["user"] 
+  	 db.NewActionItem(servlet_request.query["aaid"],3,2,{"group" => group, "user" => user}.inspect)
+  elsif servlet_request.query["action"] == "ldapenumall" then
+    db.NewActionItem(servlet_request.query["aaid"],3,10,{"all" => "all"}.inspect)
+  end
+  #delfromtg
+  #catch nulls
+%>
+<%= ZFadmingui.Header%>
+
+<div class="span3">
+	<%= ZFadmingui.Leftbar%>
+</div>
+<div class="span9">
+	<div class="hero-unit">
+		<h1>Now for the Juicy Stuff :)</h1>
+		<p>
+			This is a new level of relaying NTLM authentication requets
+		</p>
+	</div>
+
+	<div class="row-fluid">
+		<div class="span12">
+			<h1> Actions:</h2>
+			<br>
+			<form method="post" class="form form-inline" action="/rules">
+				<input type="hidden" name="action" value="action">
+				<input name="group" type="text" autocomplete="off" class="input-medium" style="margin: 0 auto;" data-provide="typeahead" data-items="4"
+				data-source='[<%db.GetGroups.each do |pew|%>"<%= pew[1]%>",<%end%>"ZACKATTACK"]' placeholder="If User Is In This Group"  >
+				-->
+				<select id="amoduleid" name="amoduleid">
+					<option value='' selected>Then Use This Module</option>
+					<%mods = Hash.new
+					db.GetMods.each do |mod|
+					mods[mod[0]] = mod[1]%>
+					<option value='<%= mod[0]%>'><%= mod[1]%></option>
+					<%end%>
+
+				</select>
+				-->
+				<input name="tgname" type="text" class="input-medium" autocomplete="off" style="margin: 0 auto;" data-provide="typeahead" data-items="4"
+				data-source='[<%db.GetTGroups.each do |pew|%>"<%= pew[1]%>",<%end%>"ZACKATTACK"]' placeholder="To This TargetGroup" autocomplete="off">
+				--> <label class="checkbox">
+					<input id="optionsCheckbox" name="alltargets" value="1" type="checkbox">
+					TO ALL TARGETS?</label> --> <label class="checkbox">
+					<input id="optionsCheckbox" name="allusers" value="1" type="checkbox">
+					WITH ALL USERS?</label> -->
+				<input type="submit" class="btn btn-success" value="CREATE">
+			</form>
+			<table class="table table-condensed">
+				<thead>
+					<tr>
+						<th>aID</th><th>if user group</th><th>then use this module</th><th>to these targets</th><th>and perform these actions</th></th><th>repeated to</th><th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<%db.GetActions.each do |act|%>
+					<tr>
+						<td><%= act[0]%></td><td><%db.GetActionsUGroup(act[0]).each do |ug| %><%= ug[1]%>
+						<br>
+						</b><%end%></td><td><%= mods[act[4]]%></td><td><%db.GetActionsTGroup(act[0]).each do |tg|%><%= tg[1]%>
+						<br>
+						<%end%></td><td> <%aitems = db.GetActionItems(act[0])
+						i=1
+						aitems.each do |ffs|
+						deets = eval ffs[4]
+						%>
+						<%= if ffs[5] == 1 then #ews
+                if ffs[3] == 1 then #download emails from folder
+                  "Pull Emails - folder=" + deets["folder"].to_s
+                else "EWS Undefined Action"
+                end
+              elsif ffs[5] == 2 then #smb
+                if ffs[3] == 1 then #enum users
+                  "Enum Users from Group '" + deets["group"].to_s + "'"
+                elsif ffs[3] == 2 then #exec cmd
+                  "Execute Command '" + deets["cmd"].to_s + "'"
+                else "SMB Undefined Action"
+                end
+              elsif ffs[5] == 3 then #ldap
+                if ffs[3] == 1 then #enum users
+                  "Enum Users from Group '" + deets["group"].to_s + "'"
+                elsif ffs[3] == 2 then #add user to group
+                  "Add User '" + deets["user"].to_s + "' to group '" + deets["group"].to_s + "'"
+                elsif ffs[3] == 10 then
+                	"Enum All users and Groups!"
+                else "LDAP Undefined Action"
+                end
+              end
+%> <a class="" data-toggle="modal" href="#delaitem" onclick="document.getElementById('aitemid').value = '<%= ffs[0]%>' "><i class="icon-remove"></i></a> <%if i!=aitems.length then%>
+						<br>
+						<%i = i+1 end%>
+						<%end%> <a class="" data-toggle="modal" href="#additem<%= act[4]%>" onclick="$('input[name^=aaid]').attr('value', '<%= act[0]%>'); $('input[name^=aamoduleid]').attr('value', '<%= act[4]%>')"><i class="icon-plus"></i></a></td></td><td><%= if act[5]==1 && act[6]==1 then "All Users & Targets" elsif act[6]==1 then "All Users" elsif act[5]==1 then "All Targets" end%></td><td><a class="" data-toggle="modal" href="#delaction" onclick="document.getElementById('aid').value = '<%= act[0]%>' "> <i class="icon-trash"></i> </a></td>
+					</tr>
+					<%end%>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<hr>
+	</div>
+	<div class="row-fluid">
+		<div class="span12">
+			<div class="span5">
+				<h1> Targets:</h2>
+				<br>
+				<form method="post" class="form form-inline" action="/rules">
+					<input type="hidden" name="action" value="target">
+					<input type="text" class="input-small" placeholder="Target Name" size="50" name="tname">
+					->
+					<input type="text" class="input-medium" placeholder="Target IP" size="100" name="tipaddr">
+					<input type="submit">
+				</form>
+				<table class="table table-condensed">
+					<thead>
+						<tr>
+							<th>tID</th><th>Target Name</th><th>Target IP</th>
+						</tr>
+					</thead>
+					<tbody>
+						<%db.GetTargets.each do |tres|%>
+						<tr>
+							<td><%= tres[0]%></td><td><%= tres[1]%></td><td><%= tres[2]%></td>
+						</tr>
+						<%end%>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="span7">
+				<h1> Target Groups:</h2>
+				<br>
+				<form method="post" class="form form-inline" action="/rules">
+					<input type="hidden" name="action" value="tgroupmember">
+					<input type="text" class="input" placeholder="Add This Target IP" size="50" name="tipaddr">
+					->
+					<input name="tgname" type="text" class="input-medium" autocomplete="off" style="margin: 0 auto;" data-provide="typeahead" data-items="4"
+					data-source='[<%db.GetTGroups.each do |pew|%>"<%= pew[1]%>",<%end%>"ZACKATTACK"]' placeholder="To This Group">
+					<input type="submit">
+				</form>
+				<table class="table table-condensed">
+					<thead>
+						<tr>
+							<th>tgID</th><th>group name</th><th>members</th><th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<%db.GetTGroups.each do |tgroups| %>
+						<tr>
+							<td><%= tgroups[0]%></td><td><%= tgroups[1]%></td><td><%db.GetTargets(tgroups[0]).each do |tgm|%><%= tgm[1]%> (<%= tgm[2]%>) <a class="" data-toggle="modal" href="#myModal" onclick="document.getElementById('tid').value = '<%= tgm[0]%>';document.getElementById('tgid').value = '<%= tgroups[0]%>' ">delete</a>
+							<br>
+							<%end%></td><td></td>
+						</tr>
+						<%end%>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div class="span12">
+			<h1>Groups:</h2>
+			<br>
+			<table class="table table-condensed">
+				<thead>
+					<tr>
+						<th>gID</th><th>groupName</th><th>members</th><th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<%gdb = db.GetGroups
+					gdb.each do |result| %>
+					<tr>
+						<td><%= result[0]%></td><td><%= result[1]%></td><td><%db.GetGroupMembers(result[0]).each do |inf|%><%if !(inf[1]==nil) then%><%= inf[2]%>\<%= inf[1]%>
+						<br>
+						<%end end%></td>
+					</tr>
+					<%end%>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div><!--/span-->
+
+<div class="modal hide fade" id="myModal">
+	<form method="post" action="/rules" name="delfromtg">
+		<div class="modal-body">
+			<input type="hidden" name="action" value="delfromtg">
+			<input type="hidden" name="tid" id="tid" value="0">
+			<input type="hidden" name="tgid" id="tgid" value="0">
+			<p align="center">
+				Are You Sure?
+			</p>
+			<a href="#" class="btn btn-primary " data-dismiss="modal">NO, CANCEL</a>
+			<button type="submit" class="btn btn-danger">
+				YES! DELETE
+			</button>
+			<a href="/help" class="btn btn-inverse">I'M CONFUSED?!?!</a>
+		</div>
+	</form>
+</div>
+
+<div class="modal hide fade" id="delaction">
+	<form method="post" action="/rules" name="delaction">
+		<div class="modal-body">
+			<input type="hidden" name="action" value="delaction">
+			<input type="hidden" name="aid" id="aid" value="0">
+			<p align="center">
+				Are You Sure?
+			</p>
+			<a href="#" class="btn btn-primary " data-dismiss="modal">NO, CANCEL</a>
+			<button type="submit" class="btn btn-danger">
+				YES! DELETE
+			</button>
+			<a href="/help" class="btn btn-inverse">I'M CONFUSED?!?!</a>
+		</div>
+	</form>
+</div>
+
+<div class="modal hide fade" id="delaitem">
+	<form method="post" action="/rules" name="delaitem">
+		<div class="modal-body">
+			<input type="hidden" name="action" value="delaitem">
+			<input type="hidden" name="aitemid" id="aitemid" value="0">
+			<p align="center">
+				Are You Sure?
+			</p>
+			<a href="#" class="btn btn-primary " data-dismiss="modal">NO, CANCEL</a>
+			<button type="submit" class="btn btn-danger">
+				YES! DELETE
+			</button>
+			<a href="/help" class="btn btn-inverse">I'M CONFUSED?!?!</a>
+		</div>
+	</form>
+</div>
+
+<div class="modal hide fade" id="additem1">
+	<div class="modal-header">
+		<h3>Add EWS Action</h3>
+	</div>
+
+	<div class="modal-body">
+		<form class="form form-inline" method="post" action="/rules" name="addaitem">
+			<h4>Query Folder and Pull Emails</h4>
+			<input type="hidden" name="action" value="addaitem">
+			<input type="hidden" name="aaid" id="aaid" value="0">
+			<input type="hidden" name="aamoduleid" id="aamoduleid" value="0">
+			<select id="ewsfolder" name="aewsfolderstock">
+				<option selected value="">Common Folder Names</option>
+				<option value="inbox">Inbox</option>
+				<option value="drafts">Drafts</option>
+				<option value="sent">Sent Items</option>
+				<option value="deleted">Deleted Items</option>
+			</select>
+			<input type="text" class="span3" placeholder="Folder Name" name="aewsfolder">
+			<input type="submit">
+			asdf
+
+		</form>
+	</div>
+
+	<p align="center">
+		<a href="#" class="btn btn-primary " data-dismiss="modal">Cancel</a><a href="/help" class="btn btn-inverse">I'M CONFUSED?!?!</a>
+	</p>
+</div>
+
+<div class="modal hide fade" id="additem2">
+	<div class="modal-header">
+		<h3>Add SMB Action</h3>
+	</div>
+
+	<div class="modal-body">
+		<h3>Enumerate Group Members from Group</h3>
+		<form method="post" name="smbenum">
+		<input type="hidden" name="action" value="smbenum">
+		<input type="hidden" name="aaid" id="aaid" value="0">
+		<input type="hidden" name="aamoduleid" id="aamoduleid" value="0">
+	 	<input name="group" placeholder="Group to Enum">
+			<input type="submit">
+		</form>
+		<h3>Execute Command</h3>
+		<form method="post" name="smbexec">
+		<input type="hidden" name="action" value="smbexec">
+		<input type="hidden" name="aaid" id="aaid" value="0">
+	 	<input name="cmd" placeholder="Command to Execute">
+			<input type="submit">
+		</form>
+	</div>
+
+</div>
+
+<div class="modal hide fade" id="additem3">
+	<div class="modal-header">
+		<h3>Add LDAP Action</h3>
+	</div>
+
+	<div class="modal-body">
+		<h3>Enumerate Group Members from Group</h3>
+		<form method="post" name="ldapenum">
+		<input type="hidden" name="action" value="ldapenum">
+		<input type="hidden" name="aaid" id="aaid" value="0">
+		<input type="hidden" name="aamoduleid" id="aamoduleid" value="0">
+	 	<input name="group" placeholder="Group to Enum">
+			<input type="submit">
+		</form>
+		<h3>Add User to Group</h3>
+		<form method="post" name="ldapenum">
+		<input type="hidden" name="action" value="ldapaddutog">
+		<input type="hidden" name="aaid" id="aaid" value="0">
+	 	Add <input class="input-small" name="user" placeholder="User"> To <input name="group" placeholder="Group">
+		<input type="submit">
+		</form>
+		<h3>Enum All The Things</h3>
+		<form method="post" name="ldapenum">
+		<input type="hidden" name="action" value="ldapenumall">
+		<input type="hidden" name="aaid" id="aaid" value="0">
+		<input type="submit">
+	</div>
+</div>
+
+<div class="modal hide fade" id="additem4">
+	<div class="modal-header">
+		<h3>Add MSSQL Action</h3>
+	</div>
+
+	<div class="modal-body">
+
+	</div>
+</div>
+
+<%= ZFadmingui.Footer%>

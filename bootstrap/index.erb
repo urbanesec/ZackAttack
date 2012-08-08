@@ -1,0 +1,25 @@
+<%
+db = ZFdb::DB.new()
+results = db.GetActiveSessions()
+%>
+<%=ZFadmingui.Header%>
+
+      	<div class="span3">
+<%=ZFadmingui.Leftbar%>
+</div>
+        <div class="span9">
+          <div class="hero-unit">
+              <h1>Welcome to ZackAttack!</h1>
+              <h3>Extermely Alpha Version 0.a.fail - Posted August 6th 2012 - CHECK FOR UPDATES VIA GIT!!</h3>
+              <p>This is a new level of relaying NTLM authentication requets</p>
+            </div>
+          <div class="row-fluid">
+            <div class="span9">
+              
+              <h1>Getting Started</h1><p>If you havn't noticed, <b><u>look up</u></b> ;). All the navigation is across the top.</p>
+              <h1>News and Update Notes</h1>
+              <p>There's a LOT more to come. Now that the framework is in place, we can start to build more of the automation and clients.</p>
+            </div><!--/span-->
+      </div><!--/row-->
+      
+<%=ZFadmingui.Footer%>

@@ -1,0 +1,110 @@
+<%
+db = ZFdb::DB.new()
+if servlet_request.query["action"] == "group" then
+	if !(servlet_request.query["group"]=="") then db.GetGroupID(servlet_request.query["group"]) end
+elsif servlet_request.query["action"] == "user" then
+	if !(servlet_request.query["user"]=="") then db.Getuserid(servlet_request.query["user"],servlet_request.query["domain"]) end
+elsif servlet_request.query["action"] == "addutog" then
+	if !(servlet_request.query["group"]=="") then 
+		gid = db.GetGroupID(servlet_request.query["group"])
+		db.AddUserToGroup(servlet_request.query["uid"],gid)
+	end
+elsif servlet_request.query["action"] == "delufromg" then
+	db.DelUserFromGroup(servlet_request.query["duid"],servlet_request.query["dgid"])
+end
+#delufromg
+#catch nulls
+%>
+<%=ZFadmingui.Header%>
+
+      	<div class="span3">
+<%=ZFadmingui.Leftbar%>
+		</div>
+         <div class="span9">
+         <div class="row-fluid">
+         	<div class="span12">
+         		<h1> Users Discovered:</h2><br>
+         				<form method="post" class="form form-inline" action="/users">
+         				<input type="hidden" name="action" value="user">
+         				<input type="text" class="input-small" placeholder="Domain" size="50" name="domain"> \ <input type="text" class="input" placeholder="New User Name" size="100" name="user">
+         				<button type="submit" class="btn">Add User</button>
+         				</form>
+					<table class="table table-condensed">         			
+						<thead>
+          					<tr><th>uID</th><th>userName</th><th>userGroups</th><th>Last Seen</th><th>Last Source</th></tr>
+      					</thead>
+      					<tbody>
+      						<%udb = db.GetUsers
+      					udb.each do |result|
+      						if result[2] == "" then result[2] = "<i>WORKGROUP</i>" end 
+      					%>
+          					<tr><td><%=result[0]%></td><td><%=result[2]%>\<%=result[1]%></td><td><i>Groups to go here</i></td><td><i><%=result[4]%></i></td><td><%=result[5]%></td><td><a class="btn" data-toggle="modal" href="#myModal" onclick="document.getElementById('uid').value = '<%=result[0]%>' ">Add To Group</a></td></td></tr>
+          					<%end%>
+          					</tbody>
+					</table>
+         		</div>
+         	</div>
+         	         <div class="row-fluid">
+         	<div class="span12">
+         		<h1>Groups:</h2><br>
+         			<form method="post" class="form form-inline" action="/users">
+         				<input type="hidden" name="action" value="group">
+         				<input type="text" class="input" placeholder="New Group Name" size="100" name="group">
+         				</form>
+         			
+					<table class="table table-condensed">         			
+						<thead>
+          					<tr><th>gID</th><th>groupName</th><th>members</th><th></th></tr>
+      					</thead>
+      					<tbody>
+      					<%gdb = db.GetGroups
+      					gdb.each do |result| %>
+          					<tr><td><%=result[0]%></td><td><%=result[1]%></td><td><%db.GetGroupMembers(result[0]).each do |inf|%><%if !(inf[1]==nil) then%><%=inf[2]%>\<%=inf[1]%> <a class="" data-toggle="modal" href="#myModal2" onclick="document.getElementById('duid').value = '<%=inf[0]%>';document.getElementById('dgid').value = '<%=result[0]%>' ">delete</a>  <br><%end end%></td></tr>
+          					<%end%>
+          					</tbody>
+					</table>
+         		</div>
+         	</div>
+
+        </div><!--/span-->
+  <div class="modal hide fade" id="myModal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Modal header</h3>
+  </div>
+  <form method="post" action="/users" name="addutog">
+  <div class="modal-body">
+  	<input type="hidden" name="action" value="addutog">
+  	<input type="hidden" name="uid" id="uid" value="1">
+    <p>WHICH GROUP?
+    	<input name="group" type="text" autocomplete="off" class="span3" style="margin: 0 auto;" data-provide="typeahead" data-items="4" 
+    	data-source='[<%db.GetGroups.each do |pew|%>"<%=pew[1]%>",<%end%>"ZACKATTACK"]'>
+    	</p>
+    
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">Close</a>
+    <button type="submit" class="btn btn-primary">Add To Group</button>
+  </div>
+  </form>
+</div>
+
+
+ <div class="modal hide fade" id="myModal2">
+  <!--<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Modal header</h3>
+  </div>-->
+  <form method="post" action="/users" name="delufromg">
+  <div class="modal-body">
+  	<input type="hidden" name="action" value="delufromg">
+  	<input type="hidden" name="duid" id="duid" value="1">
+  	<input type="hidden" name="dgid" id="dgid" value="1">
+    <p align="center">Are You Sure?</p>
+    <a href="#" class="btn btn-primary " data-dismiss="modal">NO, CANCEL</a>
+    <button type="submit" class="btn btn-danger">YES! DELETE</button>
+    <a href="/help" class="btn btn-inverse">I'M CONFUSED?!?!</a>
+  </div>
+  </form>
+</div>
+<%=ZFadmingui.Footer%>

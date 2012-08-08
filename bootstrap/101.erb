@@ -1,0 +1,40 @@
+
+<%=ZFadmingui.Header%>
+        <div class="span12">
+
+              <h1>Getting Started!</h1>
+              <p>We're going to assume you know what NTLM relaying is. You don't? Then GTFO and RTFM. Seriously. This is a tool. Not a replacement for intelligence.</p>
+              <p>First thing's first. Make sure you have permission to test this against the users and targets. Don't be stupid. And Don't Fuck This Up.</p>
+              <p>Next: The tool is broken into 4 main components</p>
+              <h2>Servers</h2>
+              <p>The Servers are the HTTP and SMB servers that perform the following:</p>
+              <ul><li>Act as a rogue server just accepting NTLM authentication.</li><li>Identify who the user is with 100% certianty to fuel the rules</li><li>Serve up the relayed Type2 msgs and route the Type3 Messages as requested.</li><li>Wait till a type 2 message is in the list to be passed or keep the user on "hold" till timeout.</li><li>If timeout is reached, send a static 112233... type2 message</li><li>Keep the client re-authenticating as much as possible.</li></ul>
+              <p>But we need more than just the servers obviously. We need ways to make the user's auto authenticate to us to get creds, thus we have...</p>
+              <h2>Auth Payloads</h2>
+              <p>Auth Payloads are the various ways to get clients to auto-authenticate to us using windows integrated authentication. Examples include html files, word docs, desktop.ini, emails, etc. If a payload can not be automatically generated, instructions are included on how to perform the attack to get the authentication requests. </p>
+              <p>So we have users authing to us, what we need next are..</p>
+              <h2>Clients</h2>
+              <p>The Clients are exactly what they sound like - clients that support NTLM relaying. These clients leverage the authenticating users connecting to the servers to connect to other servers instead.</p>
+              <p>Some clients are request driven, but we want some things auto performed, which leads us to....</p>
+              <h2>Attack Rules</h2>
+              <p>In order to auto-perform some acctions against a subset of some targets and other actions against another subset, rules can be written to auto perform when a user connects to the rogue server.</p>
+              <h1>OK, so I get the parts, Now what?</h1>
+              <p>Next step is to create rules. The rules comprise of a few parts. Keep with me here :)....</p>
+              <h2>Users</h2>
+              <p>They are obvious. They're identified by Domain name and User Name in conjunction of each other. The database automatically creates a uid for them, but the uid isn't of your concern. It's a linker.</p>
+              <h2>User Groups</h2>
+              <p>Many Users can belong to many user groups. Easy enough. Create groups for your domain users, domain admins, etc.</p>
+              <h2>Targets</h2>
+              <p>Targets are the systems you want to automatically attack. Populate them by IP (only ip works for now, dns name later)</p>
+              <h2>Target Groups</h2>
+              <p>Same as users, but for targets. Many targets can belong to many target groups. Create a group of sysadmin workstations, file servers, etc.</p>
+              <h2>ZackAttack! RULES!</h2>
+              <p>Of course it does, but i'm talking about the rule sets. After you define the targets and target groups and assign some users to groups, you can create rules. Rules follow very simple logic:</p>
+              <h4>When you see a user that belongs to USER GROUP, <br>then connect to a target in TARGET GROUP <br>with this MODULE (i.e. smb/http/ldap/mssql)<br>and perform these MODULE ACTIONS (download emails/pull files/execute commands/etc.).<br>Optionally repeat for ALL USERS in the users group (in scenarious like email with individual access)<br>or ALL TARGETS in the target group (in the case of multiple servers you want shell)</h4><br>
+              <p>make sense? good. i tried to make sure you could wrap your head arround it.</p>
+              
+              <h1>This HOWTO is really light....</h1>
+              <p>I'll be writing much more soon. Wan't to get this pushed out as fast as possible. Hugs and kisses. xo xo. Less than threes with semicolon asterisks.</p>
+
+ 		</div>	
+<%=ZFadmingui.Footer%>

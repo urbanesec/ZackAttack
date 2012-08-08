@@ -1,0 +1,17 @@
+
+<%=ZFadmingui.Header%>
+        <div class="span12">
+          <div class="hero-unit">
+              <h1>Logs and shiznit</h1>
+            </div>
+ 		</div>	
+ 		<h2>Export Hashes</h2>
+ 	<%	a = ZFdb::DB.new
+a.ExportHashes.each do |val|
+  if val[3].length == 48%>
+    <%=val[9] +"::" + val[10] + ":" + val[4] + ":" + val[3] + ":" + val[2]%>
+  <%else%> 
+    <%=val[9] +"::" + val[10] + ":" + val[2] + ":" + val[3][0,32] + ":" + val[3][32..-1]%>
+  <%end%><br>
+<%end%>
+<%=ZFadmingui.Footer%>

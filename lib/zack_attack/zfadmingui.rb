@@ -1,14 +1,28 @@
 
 module ZFadmingui
   attr_accessor :server
+
+  def self.path(path=false, read_file=true)
+    base_path = File.expand_path(File.join(File.dirname(__FILE__), 
+          "../../data/", "bootstrap")) 
+
+    if path
+      file = File.join(base_path, path)
+      return File.read(file) if file && read_file
+      file
+    else
+      base_path
+    end
+  end
+
   def self.Header
-    return ERB.new(File.read('./bootstrap/header.erb')).result(binding)
+    return ERB.new(ZFadmingui.path('header.erb')).result(binding)
   end
   def self.Leftbar
-    return ERB.new(File.read('./bootstrap/leftbar.erb')).result(binding)
+    return ERB.new(ZFadmingui.path('leftbar.erb')).result(binding)
   end
   def self.Footer
-    return ERB.new(File.read('./bootstrap/footer.erb')).result(binding)
+    return ERB.new(ZFadmingui.path('footer.erb')).result(binding)
   end
   class Http
     class ZFweb3 < WEBrick::HTTPServlet::ERBHandler
@@ -23,10 +37,10 @@ module ZFadmingui
         if req.path == "/" then
           resp.status = 302
           resp['Location'] = "http://" + req.host + ":" + "4531" +"/index" 
-        elsif File.exists?('bootstrap' + req.path + '.erb') then
-          @script_filename = "./bootstrap" + req.path + '.erb'
+        elsif File.exists?(ZFadmingui.path(req.path + '.erb', false)) then
+          @script_filename = ZFadmingui.path(req.path, false) + ".erb"
         else 
-          @script_filename = "./bootstrap" + '/404.erb'
+          @script_filename = ZFadmingui.path('404.erb', false) + ".erb"
         end
         super
         if req.query["dl"] == "1" then
@@ -69,15 +83,13 @@ module ZFadmingui
     end
     def start()
       puts "Starting Admin GUI"
-      static_path = File.expand_path(File.join(File.dirname(__FILE__), 
-                    "../../data/", "bootstrap"))
-      index_path = File.expand_path(File.join(File.dirname(__FILE__), 
-                    "../../data/", "bootstrap/index.erb"))
+      static_path = ZFadmingui.path
+      index_path = ZFadmingui.path('index.erb', false)
 
       @s.mount("/static", WEBrick::HTTPServlet::FileHandler, static_path)
       @s.mount("/api", ZFwebapi)
       @s.mount("/", ZFweb3, index_path)
-      p @s
+
       trap("INT"){
         @s.shutdown
       }

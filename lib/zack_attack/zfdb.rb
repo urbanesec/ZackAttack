@@ -3,7 +3,10 @@ require "sqlite3"
 module ZFdb
   class DB
     attr_accessor :db
-    def initialize(db_file)
+    def initialize(db_file=false)
+      
+      db_file = ZackAttack.options[:db_file] unless db_file
+
       if !(File::exists?(db_file)) then
         puts "No DB Exists yet. Creating One!"
         @db = SQLite3::Database.new(db_file)

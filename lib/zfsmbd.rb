@@ -14,7 +14,7 @@ module ZFsmb
       begin
         @server = TCPServer.open(ipaddr , 445)
         return @server
-      rescue Errno::EADDRINUSE, Errno::EACCESS
+      rescue Errno::EADDRINUSE, Errno::EACCES
         puts "PORT IN USE OR PERMS"
         return false
       end

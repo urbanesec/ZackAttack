@@ -176,13 +176,13 @@ module ZFdb
       username = username.upcase
       domain = domain.upcase
       @db.execute("SELECT uid FROM users WHERE uname = ? and udomain = ?",username,domain) do |woof| 
-        return woof
+        return woof[0] #TODO check on ruby1.9
       end
       @db.execute("INSERT INTO users('uname','udomain') VALUES (?,?);" ,username,domain)
       return @db.last_insert_row_id
     end
     def GetUserFromId(uid)
-      return @db.execute("SELECT uname,udomain FROM users WHERE uid = ? LIMIT 1",uid)[0]
+      return @db.exeuseridcute("SELECT uname,udomain FROM users WHERE uid = ? LIMIT 1",uid)[0]
     end
     
     def Getosid(os)
@@ -198,8 +198,11 @@ module ZFdb
       sessionid = @db.last_insert_row_id
       return sessionid
     end
+    def Setsessionpath(sessid,path)
+      @db.execute("UPDATE authsessions SET 'reqpath'=? WHERE authsessionid=?",path,sessid)
+    end
     def Endsession(sessionid)
-      @db.execute("UPDATE authsessions SET 'reqactive'=0 '' = updatetimestamp = (datetime('now','localtime')) WHERE authsessionid=?",sessionid )
+      @db.execute("UPDATE authsessions SET 'reqactive'=0 , 'updatetimestamp' = (datetime('now','localtime')) WHERE authsessionid=?",sessionid )
     end
     def close()
       @db.close
@@ -370,7 +373,7 @@ module ZFdb
       #not supported yet - deleting would break shit
     end
     def GetUsers
-      return @db.execute("SELECT users.*,authsessions.timestamp,authsessions.ipaddr FROM users LEFT JOIN authsessions ON users.uid=authsessions.userid AND authsessions.timestamp = (SELECT MAX(timestamp) FROM authsessions WHERE authsessions.userid = users.uid) ORDER BY timestamp DESC")
+      return @db.execute("SELECT users.*,authsessions.timestamp,authsessions.ipaddr,authsessions.method,authsessions.reqpath FROM users LEFT JOIN authsessions ON users.uid=authsessions.userid AND authsessions.timestamp = (SELECT MAX(timestamp) FROM authsessions WHERE authsessions.userid = users.uid) ORDER BY timestamp DESC")
     end
     def GetTargets(tgid=0)
       if (tgid==0) then

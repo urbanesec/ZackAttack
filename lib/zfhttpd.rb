@@ -13,21 +13,24 @@ require 'zfclient'
 module ZFhttpd
   class Server
     def initialize (ip, port)
-      @server = TCPServer.open(ip, port)
-      #TODO catch if port is already bound
+      begin
+        @server = TCPServer.open(ip, port)
+      rescue Errno::EADDRINUSE, Errno::EACCES
+        puts "HTTP - PORT IN USE OR PERMS"
+        return false
+      end
     end
     def start
       puts "Starting httpd server"
-      
+      zfdb = ZFdb::DB.new
       loop {
-        zfdb = ZFdb::DB.new
         Thread.start(@server.accept) do |cli|
+          uid = sessid = clientconn = nil
           begin
          # cli = @server.accept #make sure you recomment dumbass
           print "NEW HTTPd CONNECTION [ "
           print cli.peeraddr[3]
           puts " ]!"
-          uid = sessid = clientconn = nil
           count = 1
           request = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
           while (request.parse(cli))
@@ -59,9 +62,9 @@ module ZFhttpd
                 ntlmmsg = ZFNtlm::Message.new(ntlmdata)
                 ntlmmsg.parsetype3
                 if uid == nil then
-                  puts "HTTP user: " + ntlmmsg.domain + "\\" + ntlmmsg.username
+                  puts "HTTP user: " + ntlmmsg.domain + "\\" + ntlmmsg.username 
                   uid = zfdb.Getuserid(ntlmmsg.username,ntlmmsg.domain)
-                  sessid = zfdb.Newsession(uid,ntlmmsg.hostname,0,cli.peeraddr[3],2,"/path")
+                  sessid = zfdb.Newsession(uid,ntlmmsg.hostname,0,cli.peeraddr[3],2,request.host + request.unparsed_uri)
                   zfdb.StoreHash(uid,ntlmmsg.lmhash,ntlmmsg.ntlmhash,"1122334455667788",sessid,Base64.encode64(ntlmdata))
                 else
                   Thread.start{clientconn.sendtype3(ntlmdata)}
@@ -85,13 +88,13 @@ module ZFhttpd
             end
             #puts "sending!"
             response['Connection'] = "Keep-Alive"
+            response['Keep-Alive'] = "timeout=5"
             response.send_response(cli)
             request = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
           end
         rescue
           zfdb.Endsession(sessid)
-          puts "connection died"
-          
+          puts "Session Died for " + uid.to_s + " after " + count.to_s + " times"
         end
         end
       } #

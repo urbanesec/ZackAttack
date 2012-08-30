@@ -15,7 +15,11 @@ socks5	127.0.0.1	4532
 <pre>
 proxychains smbclient -U testdom/testuer%anybspassitignoresit //targetip/share
 </pre>
-<p>Cool? I think so.</p>
+<p>Cool? I think so. But how about just enmueration?</p>
+<pre>
+proxychains rpcclient -c 'enumalsgroups builtin' -U 'domain\machinename$'%'anypassworditignoresitanyways' 'targetIP'
+</pre>
+<p>That's right. It works with HOSTNAME$ system accounts. Mind blown yet?</p>
 <h3>HTTP</h3>
 <p>Not supported yet, but won't take much to add. It's coming soon.</p><br>
 <h2>API requests</h2>

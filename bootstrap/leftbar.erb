@@ -7,11 +7,13 @@
 <div style="padding-left:10px" class="well sidebar-nav">
 	<h3>Connected RIGHT NOW!</h3>
 	<ul class="unstyled">
-		<%results.each do |key,woof|%>
+		<%results.each do |key,woof|
+		if woof[:domain] == "" then woof[:domain] = "<i>WORKGROUP</i>" end%>
 		<li>
 			<a href="#">
 			<div class="btn-group">
-				<a rel="popover" title="<%= woof[:username]%>" data-content="<dl class='dl-horizontal'><dt>Auth Method</dt><dd><%=if woof[:method]==1 then "SMB" elsif woof[:method] ==2 then "HTTP" else "unknown?wtf" end%></dd><dt>Auth Src</dt><dd><%=woof[:ip]%></dd><dt>Hostname</dt><dd>WIN7USER1$</dd><dt>OS Version</dt><dd>Windows 7 SP1</dd><dt>Groups?</dt><dd><%db.GetGroups(woof[:userid]).each do  |a|%><%= a[1] + "<br>"%><%end%></dd></dl>" data-toggle="dropdown" class="btn btn-danger dropdown-toggle"><i class="icon-fire"></i> <%= woof[:domain]%>/<%= woof[:username]%> <span class="caret"/></a>
+				<a rel="popover" title="<%= woof[:username]%>" data-content="<dl class='dl-horizontal'><dt>Auth Method</dt><dd><%=if woof[:method]==1 then "SMB" elsif woof[:method] ==2 then "HTTP" else "unknown?wtf" end%></dd><dt>Auth Src</dt><dd><%=woof[:ip]%></dd><dt>Groups?</dt><dd><%db.GetGroups(woof[:userid]).each do  |a|%><%= a[1] + "<br>"%><%end%></dd></dl>" data-toggle="dropdown" class="btn btn-danger dropdown-toggle"><i class="icon-fire"></i> <%= woof[:domain]%>\<%= woof[:username]%> <span class="caret"/></a>
+<!--
 				<ul class="dropdown-menu">
 					<li>
 						<a data-toggle="modal" href="#myLeftews"><i class="icon-info-sign"></i> Enumerate via SMB</a>
@@ -28,7 +30,10 @@
 					<li>
 						<a href="#"><i class="icon-edit"></i> Sharepoint</a>
 					</li>
-					<!-- dropdown menu links -->
+					 dropdown menu links -->
+<ul class="dropdown-menu">
+<li>instant actions coming soon</li>
+</ul>
 			</div></a>
 		</li>
 
@@ -46,7 +51,7 @@
 		if udata[2] == "" then udata[2] = "<i>WORKGROUP</i>" end
 		%>
 		<li>
-			<a rel="popover" href="#" class="btn btn-success" title="<%=udata[2]%>/<%=udata[1]%>" data-content="Last Seen: <%=udata[4]%>"><i class="icon-user"/></i> <%= udata[2]%>/<%= udata[1]%></a>
+			<a rel="popover" href="#" class="btn btn-success" title="<%=udata[2]%>\<%=udata[1]%>" data-content="Last Seen: <%=udata[4]%>"><i class="icon-user"/></i> <%= udata[2]%>\<%= udata[1]%></a>
 		</li>
 
 		<%end
@@ -56,13 +61,6 @@
 			No Historical Hosts
 		</li>
 		<%end%>
-		<!--
-		<li>
-		<a rel="popover" href="#" class="btn btn-info" title="A Title" data-content="And here's some amazing content. It's very engaging. right?"><i class="icon-off"/></i> TESTDOM2K8/WIN7USER$</a>
-		</li>
-		<li>
-		<a rel="popover" href="#" class="btn btn-danger" title="A Title" data-content="And here's some amazing content. It's very engaging. right?"><i class="icon-fire"/></i> TESTDOM2K8\zfaseladmin</a>
-		</li>-->
 	</ul>
 	<h3>"shells" or the like</h3>
 	<i>Coming Soon :)</i>
@@ -73,7 +71,7 @@
 	<button type="button" class="close" data-dismiss="modal">×</button>
 	<h3>Modal header</h3>
 	</div>-->
-	<form method="post" action="/actions" name="delufromg">
+	<form method="post" action="/actions" name="ewsquickadd">
 		<div class="modal-body">
 			<input type="hidden" name="action" value="delufromg">
 			<input type="hidden" name="duid" id="duid" value="1">

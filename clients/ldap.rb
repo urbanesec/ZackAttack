@@ -18,8 +18,9 @@ module ZFClient
       @s.write(w.Buildpacket)
       @q, x = @s.recvfrom(2000)
       #debug cut
-      puts type1msg[12,4].unpack("H*")
-      type1msg[12,4] = "\x97\x82\x08\xe2"
+      puts "type 1"
+      #puts type1msg[12,4].unpack("H*")
+      #type1msg[12,4] = "\x97\x82\x08\xe2"
       #type1msg[12,4] = "\x97\x82\x08\xe2"
       #debug end
       w.BuildNTLM(1,type1msg)
@@ -27,8 +28,16 @@ module ZFClient
       @q, x = @s.recvfrom(2000)
       ntlm = Ldappkt.ParseNTLM(@q)
       #debug cut
+      puts "two"
+      puts "packet:"
+      puts @q.unpack("H*")
+      puts "ntlm"
+      puts ntlm.unpack("H*")
+      puts "fail coming"
       puts ntlm[20,4].unpack("H*")
-      ntlm[20,4] = "\x15\x82\x89\xe2"
+      #TODO FIX Above THIS!!!!
+      puts "three"
+      #ntlm[20,4] = "\x15\x82\x89\xe2"
       #ntlm[20,4] = "\x05\x82\x89\xe2"
       #debug end
       return ntlm
@@ -45,11 +54,20 @@ module ZFClient
       @s.write(w.Buildpacket)
       @q, x = @s.recvfrom(2000)
       baseobj = w.ParseBaseDN(@q) #zfzf
+      puts "baseobject!"
+      puts baseobj
       actions = @db.GetActionItems(items["aid"])
       actions.each do |act|
         if act[3] == 1 then #enum group
           group = (eval act[4])["group"]
+          puts "group"
           puts group
+          w.FindDN(baseobj, group,2)
+          @s.write(w.Buildpacket)
+          @q, x = @s.recvfrom(2000)
+          groupdn = w.ParseSearchResult(@q)
+          puts groupdn
+          puts "groupa"
         elsif act[3] == 2 then #add user to group
           info = (eval act[4])
           w.FindDN(baseobj, info["user"],1)
@@ -89,9 +107,13 @@ module ZFClient
     end
     def self.ParseNTLM(msg)
       pos = msg.index(/\x4e\x54\x4c\x4d\x53\x53\x50/)
-      if msg[pos-3] == "\x82" then len = msg[pos-2,2].unpack("n")[0]
+      puts "here it comes"
+      if msg[pos-3,1] == "\x82" then puts "82" else puts "not 82" end
+      if msg[pos-3,1] == "\x82" then len = msg[pos-2,2].unpack("n")[0]
       else len = msg[pos-1,1].unpack("C")[0] 
       end
+      puts len
+      puts "length above"
       return msg[pos,len]
     end
     

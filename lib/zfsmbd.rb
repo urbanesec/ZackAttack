@@ -14,8 +14,8 @@ module ZFsmb
       begin
         @server = TCPServer.open(ipaddr , 445)
         return @server
-      rescue Errno::EADDRINUSE, Errno::EACCESS
-        puts "PORT IN USE OR PERMS"
+      rescue Errno::EADDRINUSE, Errno::EACCES
+        puts "SMB - PORT IN USE OR PERMS"
         return false
       end
     end
@@ -64,7 +64,7 @@ module ZFsmb
             if uid == nil then
               puts "SMB user: " + ntlmmsg.domain + "\\" + ntlmmsg.username
               uid = zfdb.Getuserid(ntlmmsg.username,ntlmmsg.domain)
-              sessid = zfdb.Newsession(uid,ntlmmsg.hostname,0,cli.peeraddr[3],1,"/")
+              sessid = zfdb.Newsession(uid,ntlmmsg.hostname,0,cli.peeraddr[3],1,"\IPC$")
               zfdb.StoreHash(uid,ntlmmsg.lmhash,ntlmmsg.ntlmhash,"1122334455667788",sessid,Base64.encode64(ntlmreq))
 
             else
@@ -88,8 +88,15 @@ module ZFsmb
           end
         elsif (req.smbcmd == "\x75") then # TreeConnectAndX
           
-          #TODO: update path
-          #puts q[/(\x5c\x00\x5c\x00.*\x00\x00)/] # lazy detection of file share
+          path = q[/(\x5c\x00\x5c\x00.*\x00\x00)/].unpack("M*")[0].gsub("\x00","") # lazy detection of file share
+          begin
+            #TODO: detect if IPC$ and don't log it.
+            if !(path.include? "IPC$") then 
+              zfdb.Setsessionpath(sessid,path)
+            end
+          rescue
+            puts $!
+          end
           resp = SMBReauth.new(q)
           cli.write(resp.getpacket)
   
@@ -100,7 +107,7 @@ module ZFsmb
       }
       rescue
         zfdb.Endsession(sessid)
-        puts "connection died"
+        puts "Session Died for " + uid
       end
       end
             }

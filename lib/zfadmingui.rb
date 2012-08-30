@@ -68,7 +68,12 @@ module ZFadmingui
       end
     end
     def initialize (ip, port)
-      @s = WEBrick::HTTPServer.new(:BindAddress => ip, :Port => port, :AccessLog => [], :Logger => WEBrick::Log::new("/dev/null", 7))
+      begin
+        @s = WEBrick::HTTPServer.new(:BindAddress => ip, :Port => port, :AccessLog => [], :Logger => WEBrick::Log::new("/dev/null", 7))
+      rescue Errno::EADDRINUSE, Errno::EACCES
+        puts "ADMIN HTTP - PORT IN USE OR PERMS"
+        return false
+      end
     end
     def start()
       puts "Starting Admin GUI"
@@ -79,8 +84,8 @@ module ZFadmingui
         @s.shutdown
       }
       puts "\n==========================================================="
-      puts " WELCOME TO ZackAttack! - Version 0.a.fail."
-      puts " Now with even more win!"
+      puts " WELCOME TO ZackAttack! - Version 0.a.lessfail."
+      puts " Less Bugs than..er...a version ago!"
       puts " No CLI Gui for Now. Connect to http://" + MGMTUser + ":" + MGMTPass + "@" + MGMTIP + ":" + MGMTPort
       puts "==========================================================="
       @s.start

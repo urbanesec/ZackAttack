@@ -14,19 +14,19 @@ puts "Here Goes ZackAttack! Booting Up!....."
 puts "=================================================="
 #clear out old sessions / stuf TODO: consolidate into an init sequence / db cleanup
 db = ZFdb::DB.new()
+# TODO catch readonly andother db errors
 db.ClearActiveSessions
 db.db.execute("DELETE FROM aresults")
 
   smb = ZFsmb::Server.new(SMBDIP) #only works on 445
   http = ZFhttpd::Server.new(HTTPIP,HTTPPort)
+
   gui = ZFadmingui::Http.new(MGMTIP,MGMTPort)
   socks = ZFsocks::Server.new(SOCKSIP,SOCKSPort)
   #add CLI
-
-  c = Thread.new{gui.start()} 
-  d = Thread.new{socks.start()}
-  b = Thread.new{smb.start()}
-  a = Thread.new{http.start()}
-  c.join
-  
-  puts "exiting"
+    c = Thread.new{gui.start()} 
+    d = Thread.new{socks.start()}
+    b = Thread.new{smb.start()}
+    a = Thread.new{http.start()}
+    c.join
+    puts "exiting"

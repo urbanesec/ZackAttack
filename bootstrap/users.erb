@@ -31,14 +31,14 @@ end
          				</form>
 					<table class="table table-condensed">         			
 						<thead>
-          					<tr><th>uID</th><th>userName</th><th>userGroups</th><th>Last Seen</th><th>Last Source</th></tr>
+          					<tr><th>uID</th><th>userName</th><!--<th>userGroups</th>--><th>Last Seen</th><th>Last Source</th><th>Method</th><th>Path</th></tr>
       					</thead>
       					<tbody>
       						<%udb = db.GetUsers
       					udb.each do |result|
       						if result[2] == "" then result[2] = "<i>WORKGROUP</i>" end 
       					%>
-          					<tr><td><%=result[0]%></td><td><%=result[2]%>\<%=result[1]%></td><td><i>Groups to go here</i></td><td><i><%=result[4]%></i></td><td><%=result[5]%></td><td><a class="btn" data-toggle="modal" href="#myModal" onclick="document.getElementById('uid').value = '<%=result[0]%>' ">Add To Group</a></td></td></tr>
+          					<tr><td><%=result[0]%></td><td><%=result[2]%>\<%=result[1]%></td><!--<td><i>Groups to go here</i></td>--><td><i><%=result[4]%></i></td><td><%=result[5]%></td><td><%= if result[6]==1 then "SMB" elsif result[6]==2 then "HTTP" else "Unknown" end%></td><td><%=result[7]%></td><td><a class="btn" data-toggle="modal" href="#myModal" onclick="document.getElementById('uid').value = '<%=result[0]%>' ">Add To Group</a></td></td></tr>
           					<%end%>
           					</tbody>
 					</table>

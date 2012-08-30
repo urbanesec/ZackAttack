@@ -16,7 +16,7 @@ module ZFClient
 
     def sendtype1(type1msg)
       res = @db.ProcessApiReq(@reqid) #type2msg
-      return Base64.decode64(res[2]).gsub("\n",'')
+      return Base64.decode64(res[2])#.gsub("\n",'')
     end
 
     def sendtype3(type3msg, rawpkt,  details)

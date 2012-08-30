@@ -7,8 +7,8 @@ require 'net/http'
 require 'net/https'
 require 'base64'
 require 'zfdb'
-
-Ews_id_query = '<?xml version="1.0" encoding="utf-8"?>
+#TODO: Fix below so there's not a 1 or 2. For some reason .gsub("CHANGEME",folder) wasn't working
+Ews_id_query1 = '<?xml version="1.0" encoding="utf-8"?>
                       <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
                         <soap:Body>
                           <FindItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types" Traversal="Shallow">
@@ -16,11 +16,13 @@ Ews_id_query = '<?xml version="1.0" encoding="utf-8"?>
                               <t:BaseShape>IdOnly</t:BaseShape>
                             </ItemShape>
                             <ParentFolderIds>
-                              <t:DistinguishedFolderId Id="CHANGEME"/>
+                              <t:DistinguishedFolderId Id="'
+Ews_id_query2 = '"/>
                             </ParentFolderIds>
                           </FindItem>
                         </soap:Body>
                       </soap:Envelope>'
+                      
 
 Info3 = '<?xml version="1.0" encoding="utf-8"?>
                       <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
@@ -74,8 +76,8 @@ module ZFClient
       request['Content-Type'] = "text/xml"
       request['Connection'] = "Keep-Alive"
       request['Authorization'] = 'NTLM ' + Base64.encode64(type3msg).gsub("\n",'').strip
-      woof = Ews_id_query
-      woof.sub("CHANGEME","trash")
+      woof = Ews_id_query1 + "trash" + Ews_id_query2
+      #woof.sub("CHANGEME","trash")
       request['Content-Length'] = woof.length
       request.body = woof
       response = @client.request(request)
@@ -84,10 +86,8 @@ module ZFClient
       actions.each do |act|
         if act[3] == 1 then #get emails
           folder = (eval act[4])["folder"]
-          body = Ews_id_query
-          puts folder
-          puts body
-          body.sub("CHANGEME",folder)
+          body = Ews_id_query1 + folder + Ews_id_query2
+          #puts body
           request = Net::HTTP::Post.new('/ews/Exchange.asmx')
           request['Content-Type'] = "text/xml"
           request['Connection'] = "Keep-Alive"

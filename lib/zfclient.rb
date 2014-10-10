@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-#encoding: ASCII-8BIT
 =begin
 exchange web services client
 =end
@@ -10,67 +9,67 @@ require 'staticchal'
 require 'zfdb'
 require 'apireq'
 
-
 module ZFClient
   class Router
-    def initialize (uid,timeout)
-      #puts "uid"
-      #puts uid.inspect
-      
+    def initialize(uid, timeout)
+      # puts 'uid'
+      # puts uid.inspect
       @db = ZFdb::DB.new
       begin
         item = nil
-        Timeout.timeout(timeout) { 
-          while item == nil do
+        Timeout.timeout(timeout) do
+          while item.nil?
             item = @db.GetApiReq(uid)
-            if item == nil then item = @db.GetTodoItem(uid)[0] end
-            if item == nil then sleep 0.2 end
+            item = @db.GetTodoItem(uid)[0] if item.nil?
+            sleep 0.2 if item.nil?
           end
-        @details = {"uid" => uid, "aid" => item["aid"],"tid" => item["tid"] }
-        @arid = @db.ActionPerformed(item["aid"],item["tid"],uid)
-        @tip = item["tipaddr"]
-        
-        # Look for stuff from db a loop minding timeout
-        # try to connect minding timeout
-        # if can't connect, break it and repeat trying to find stuff
-        mtype = item["moduleid"]
-        if mtype == 1 then
-          puts "EWS Action " + @tip
-          if !(@client = ZFClient::EWS.new(@tip,443)) then
-            #todo CONNECTION REFUSED ERRORS!
-            puts "FAIL!"
+          @details = { 'uid' => uid, 'aid' => item['aid'],
+                       'tid' => item['tid'] }
+          @arid = @db.ActionPerformed(item['aid'], item['tid'], uid)
+          @tip = item['tipaddr']
+
+          # Look for stuff from db a loop minding timeout
+          # try to connect minding timeout
+          # if can't connect, break it and repeat trying to find stuff
+          mtype = item['moduleid']
+          case mtype
+          when 1
+            puts 'EWS Action ' + @tip
+            if !(@client = ZFClient::EWS.new(@tip, 443))
+              # TODO: CONNECTION REFUSED ERRORS!
+              puts 'FAIL!'
+            end
+          when 2
+            puts 'SMB Action ' + @tip
+            if !(@client = ZFClient::Smb.new(@tip, 445))
+              puts 'FAIL!'
+            end
+          when 3
+            puts 'LDAP Action ' + @tip
+            if !(@client = ZFClient::Ldap.new(@tip, 389))
+              puts 'FAIL!'
+            end
+          when 0
+            puts 'API Action ' + @tip
+            @client = ZFClient::Apireq.new(@tip, uid)
           end
-        elsif mtype == 2 then
-          puts "SMB Action " + @tip
-          if !(@client = ZFClient::Smb.new(@tip,445)) then
-            puts "FAIL!"
-          end
-        elsif mtype == 3 then
-          puts "LDAP Action " + @tip
-          if !(@client = ZFClient::Ldap.new(@tip,389)) then
-            puts "FAIL!"
-          end
-        elsif mtype == 0 then
-          puts "API Action " + @tip
-          @client = ZFClient::Apireq.new(@tip,uid)
+
         end
-        
-        }
       rescue Timeout::Error
-        puts "No Instructions for " + uid.to_s
+        puts 'No Instructions for ' + uid.to_s
       end
-      if @client == nil
-        @client = ZFClient::StaticType2.new("0.0.0.0",0)
-      end
+      @client = ZFClient::StaticType2.new('0.0.0.0', 0) if @client.nil?
     end
 
     def sendtype1(ntlmdata)
-       return @client.sendtype1(ntlmdata)
+      @client.sendtype1(ntlmdata)
     end
-    def sendtype3(ntlmdata,rawpkt=nil)
-      # this should be a send it and forget it kind of thing. should be already threaded by httpd and smbd
-      #puts "Type3Data sending to client"
-      @client.sendtype3(ntlmdata,rawpkt,@details)
+
+    def sendtype3(ntlmdata, rawpkt = nil)
+      # this should be a send it and forget it kind of thing.
+      # should be already threaded by httpd and smbd
+      # puts 'Type3Data sending to client'
+      @client.sendtype3(ntlmdata, rawpkt, @details)
     end
   end
 end

@@ -1,3 +1,9 @@
+### 0.1.2 / 2014-10-10
+
+* Code clean up
+* Added Gemfile
+* Confrim starts on kali
+
 ### 0.1.1 / 2012-08-29
 
 * Disabled Left Nav Bar Dropdown Rules as they were not coded. Coming soon.

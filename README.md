@@ -1,5 +1,5 @@
 =====
-ZackAttack! - Realying NTLM Like Nobody's Business
+ZackAttack! - Relaying NTLM Like Nobody's Business
 =====
 
 
